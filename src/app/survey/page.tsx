@@ -123,13 +123,15 @@ export default function SurveyPage() {
     if (!confirm("Are you sure you want to submit? You won't be able to edit your responses after submission.")) return;
     setSubmitting(true);
     try {
-      await fetch("/api/assessment/submit", {
+      const res = await fetch("/api/assessment/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assessmentId: assessment.id }),
       });
+      if (!res.ok) throw new Error("Submit failed");
       router.push("/survey/complete");
     } catch {
+      alert("Failed to submit assessment. Please try again.");
       setSubmitting(false);
     }
   };

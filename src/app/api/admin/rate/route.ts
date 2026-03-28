@@ -14,6 +14,14 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  const assessment = await prisma.assessment.findUnique({ where: { id: assessmentId } });
+  if (!assessment) {
+    return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
+  }
+  if (assessment.status !== "SUBMITTED") {
+    return NextResponse.json({ error: "Assessment not submitted" }, { status: 400 });
+  }
+
   const adminRating = await prisma.adminRating.upsert({
     where: {
       assessmentId_competencyRank_adminUserId: {
