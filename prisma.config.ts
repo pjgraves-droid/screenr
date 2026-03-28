@@ -9,6 +9,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Fallback to file:./dev.db so prisma generate succeeds during build
+    // even when DATABASE_URL is not yet available (e.g. Vercel postinstall)
+    url: process.env["DATABASE_URL"] ?? "file:./dev.db",
   },
 });
