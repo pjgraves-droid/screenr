@@ -2,6 +2,7 @@ import { hash } from "bcryptjs";
 import { execSync } from "child_process";
 import * as path from "path";
 import * as crypto from "crypto";
+import * as fs from "fs";
 
 async function main() {
   const password = await hash("admin123", 12);
@@ -11,7 +12,14 @@ async function main() {
 
   const sql = `INSERT OR IGNORE INTO User (id, name, email, password, role, createdAt, updatedAt) VALUES ('${id}', 'Admin', 'admin@screenr.app', '${password}', 'ADMIN', '${now}', '${now}');`;
 
-  execSync(`sqlite3 "${dbPath}" "${sql}"`, { stdio: "inherit" });
+  // Write SQL to a temp file to avoid shell variable expansion mangling the bcrypt hash
+  const tmpFile = path.join(__dirname, "_seed.sql");
+  fs.writeFileSync(tmpFile, sql);
+  try {
+    execSync(`sqlite3 "${dbPath}" < "${tmpFile}"`, { stdio: "inherit" });
+  } finally {
+    fs.unlinkSync(tmpFile);
+  }
   console.log("Seed complete: Admin user created (admin@screenr.app / admin123)");
 }
 
