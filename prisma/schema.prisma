@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String?
+  email        String        @unique
+  password     String
+  role         String        @default("CANDIDATE")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  assessments  Assessment[]
+  adminRatings AdminRating[]
+}
+
+model Assessment {
+  id           String        @id @default(cuid())
+  userId       String
+  status       String        @default("DRAFT")
+  submittedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  responses    Response[]
+  selfRatings  SelfRating[]
+  adminRatings AdminRating[]
+}
+
+model Response {
+  id             String     @id @default(cuid())
+  assessmentId   String
+  competencyRank Int
+  questionIndex  Int
+  answer         String     @default("")
+  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, competencyRank, questionIndex])
+}
+
+model SelfRating {
+  id             String     @id @default(cuid())
+  assessmentId   String
+  competencyRank Int
+  rating         Int
+  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, competencyRank])
+}
+
+model AdminRating {
+  id             String     @id @default(cuid())
+  assessmentId   String
+  competencyRank Int
+  rating         Int
+  notes          String?
+  adminUserId    String
+  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  admin          User       @relation(fields: [adminUserId], references: [id])
+
+  @@unique([assessmentId, competencyRank, adminUserId])
+}
