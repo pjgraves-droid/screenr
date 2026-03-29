@@ -56,22 +56,22 @@ export async function GET(request: Request) {
     }
   }
 
-  // Try full assessment creation flow
+  // Try full assessment creation flow (read-only check if tables exist)
   try {
     const firstUser = await prisma.user.findFirst();
     if (firstUser) {
-      const testAssessment = await prisma.assessment.create({
-        data: { userId: firstUser.id },
+      const existing = await prisma.assessment.findFirst({
+        where: { userId: firstUser.id },
         include: { responses: true, selfRatings: true },
       });
-      await prisma.assessment.delete({ where: { id: testAssessment.id } });
-      results.full_create_test = "ok";
+      results.full_read_test = "ok";
+      results.existing_assessment = !!existing;
     } else {
-      results.full_create_test = "no users";
+      results.full_read_test = "no users";
     }
   } catch (error) {
-    results.full_create_test = "failed";
-    results.full_create_error = error instanceof Error ? error.message : String(error);
+    results.full_read_test = "failed";
+    results.full_read_error = error instanceof Error ? error.message : String(error);
   }
 
   return NextResponse.json(results);
