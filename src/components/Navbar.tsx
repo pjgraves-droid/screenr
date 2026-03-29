@@ -10,20 +10,18 @@ export default function Navbar() {
   return (
     <nav className="bg-[#1a2035] border-b border-[#2a3050]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center items-center py-6">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/acumen_logo.png"
-              alt="Acumen"
-              width={360}
-              height={120}
-              className="h-30 w-auto"
-              priority
-            />
-          </Link>
-        </div>
-        <div className="flex justify-between items-center pb-3">
-          <div className="flex items-center">
+        <div className="flex justify-between items-center py-3">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/acumen_logo.png"
+                alt="Acumen"
+                width={360}
+                height={120}
+                className="h-16 w-auto"
+                priority
+              />
+            </Link>
             {session?.user?.role === "ADMIN" && (
               <Link
                 href="/admin"
