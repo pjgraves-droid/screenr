@@ -45,8 +45,11 @@ export default function SurveyPage() {
   useEffect(() => {
     if (status === "authenticated") {
       fetch("/api/assessment")
-        .then((res) => {
-          if (!res.ok) throw new Error(`API error: ${res.status}`);
+        .then(async (res) => {
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.detail || body.error || `API error: ${res.status}`);
+          }
           return res.json();
         })
         .then((data: AssessmentData) => {
@@ -69,7 +72,7 @@ export default function SurveyPage() {
         })
         .catch((err) => {
           console.error("Failed to load assessment:", err);
-          setLoadError("Failed to load assessment. Please refresh the page.");
+          setLoadError(err.message || "Failed to load assessment. Please refresh the page.");
         });
     }
   }, [status, router]);
