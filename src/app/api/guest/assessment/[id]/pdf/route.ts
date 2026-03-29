@@ -14,10 +14,11 @@ export async function GET(
       include: {
         responses: true,
         selfRatings: true,
+        user: { select: { role: true } },
       },
     });
 
-    if (!assessment) {
+    if (!assessment || assessment.user.role !== "GUEST") {
       return NextResponse.json(
         { error: "Assessment not found" },
         { status: 404 }
