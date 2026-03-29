@@ -132,7 +132,7 @@ export default function SurveyPage() {
 
   const handleSubmit = async () => {
     if (!assessment) return;
-    if (!confirm("Are you sure you want to submit? You won't be able to edit your responses after submission.")) return;
+    if (!confirm("Are you sure you want to submit? You can edit and resubmit later from the completion page if needed.")) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/assessment/submit", {

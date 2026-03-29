@@ -25,12 +25,25 @@ export default function CompletePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
+  const [reopening, setReopening] = useState(false);
+  const [assessmentId, setAssessmentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
   }, [status, router]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetch("/api/assessment")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.id) setAssessmentId(data.id);
+        })
+        .catch(() => {});
+    }
+  }, [status]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("submitResult");
@@ -43,6 +56,26 @@ export default function CompletePage() {
       sessionStorage.removeItem("submitResult");
     }
   }, []);
+
+  const handleEditResubmit = async () => {
+    if (!assessmentId) return;
+    setReopening(true);
+    try {
+      const res = await fetch("/api/assessment/reopen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assessmentId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to reopen assessment");
+      }
+      router.push("/survey");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to reopen assessment. Please try again.");
+      setReopening(false);
+    }
+  };
 
   return (
     <>
@@ -107,7 +140,7 @@ export default function CompletePage() {
             </p>
           )}
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
             <a
               href="/api/assessment/pdf"
               download
@@ -115,6 +148,13 @@ export default function CompletePage() {
             >
               Download PDF
             </a>
+            <button
+              onClick={handleEditResubmit}
+              disabled={reopening}
+              className="rounded-lg border border-brand-purple px-6 py-3 text-sm font-semibold text-brand-purple hover:bg-brand-purple/10 disabled:opacity-50 transition-colors"
+            >
+              {reopening ? "Reopening..." : "Edit & Resubmit"}
+            </button>
             <Link
               href="/"
               className="rounded-lg bg-brand-purple px-6 py-3 text-sm font-semibold text-white hover:bg-[#2d56a8] transition-colors"
