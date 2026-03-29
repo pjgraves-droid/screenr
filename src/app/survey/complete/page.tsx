@@ -72,23 +72,25 @@ export default function CompletePage() {
 
   useEffect(() => {
     if (status !== "authenticated") return;
+    let cancelled = false;
 
     // Initial fetch
     fetchAiScores().then((done) => {
-      if (done) return;
+      if (done || cancelled) return;
       // Poll every 5 seconds for up to 2 minutes
       let attempts = 0;
       pollRef.current = setInterval(async () => {
         attempts++;
         const done = await fetchAiScores();
-        if (done || attempts >= 24) {
+        if (done || attempts >= 24 || cancelled) {
           if (pollRef.current) clearInterval(pollRef.current);
-          setAiLoading(false);
+          if (!cancelled) setAiLoading(false);
         }
       }, 5000);
     });
 
     return () => {
+      cancelled = true;
       if (pollRef.current) clearInterval(pollRef.current);
     };
   }, [status, fetchAiScores]);
