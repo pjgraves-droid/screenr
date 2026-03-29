@@ -141,6 +141,12 @@ export default function SurveyPage() {
         body: JSON.stringify({ assessmentId: assessment.id }),
       });
       if (!res.ok) throw new Error("Submit failed");
+      const data = await res.json();
+      sessionStorage.setItem("submitResult", JSON.stringify({
+        avgRating: data.avgRating,
+        ratingsCount: data.ratingsCount,
+        emailSent: data.emailSent,
+      }));
       router.push("/survey/complete");
     } catch {
       alert("Failed to submit assessment. Please try again.");

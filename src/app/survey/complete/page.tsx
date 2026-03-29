@@ -4,17 +4,45 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { competencies } from "@/lib/competencies";
+
+interface SubmitResult {
+  avgRating: number;
+  ratingsCount: number;
+  emailSent: boolean;
+}
+
+function getRatingLabel(rating: number): string {
+  if (rating >= 9) return "Exceptional";
+  if (rating >= 7) return "Strong";
+  if (rating >= 5) return "Developing";
+  if (rating >= 3) return "Emerging";
+  return "Gap";
+}
 
 export default function CompletePage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
   }, [status, router]);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("submitResult");
+    if (stored) {
+      try {
+        setSubmitResult(JSON.parse(stored));
+      } catch {
+        // ignore parse errors
+      }
+      sessionStorage.removeItem("submitResult");
+    }
+  }, []);
 
   return (
     <>
@@ -39,16 +67,61 @@ export default function CompletePage() {
           <h1 className="text-2xl font-bold text-foreground mb-3">
             Assessment Submitted
           </h1>
-          <p className="text-muted mb-8">
-            Thank you for completing the Executive Competency Assessment. Your
-            responses have been recorded and will be reviewed by our team.
+          <p className="text-muted mb-4">
+            Thank you for completing the Executive Competency Assessment.
           </p>
-          <Link
-            href="/"
-            className="rounded-lg bg-brand-purple px-6 py-3 text-sm font-semibold text-white hover:bg-[#2d56a8] transition-colors"
-          >
-            Return Home
-          </Link>
+
+          {/* Average Self-Rating */}
+          {submitResult && submitResult.avgRating > 0 && (
+            <div className="bg-card rounded-xl border border-card-border p-6 mb-6">
+              <div className="text-sm text-muted mb-1">
+                Average Self-Rating
+              </div>
+              <div className="text-4xl font-bold text-brand-purple mb-1">
+                {submitResult.avgRating}
+              </div>
+              <div className="text-sm text-muted mb-1">
+                {getRatingLabel(submitResult.avgRating)}
+              </div>
+              <div className="text-xs text-muted">
+                {submitResult.ratingsCount} of {competencies.length} competencies rated
+              </div>
+            </div>
+          )}
+
+          {/* Email Status */}
+          {submitResult?.emailSent && session?.user?.email ? (
+            <>
+              <p className="text-brand-green text-sm mb-2">
+                Your results have been sent to{" "}
+                <strong>{session.user.email}</strong>.
+              </p>
+              <p className="text-muted text-xs mb-6">
+                Don&apos;t see it? Please check your spam or junk folder.
+              </p>
+            </>
+          ) : (
+            <p className="text-muted text-sm mb-6">
+              Your responses have been recorded and will be reviewed by our
+              team.
+            </p>
+          )}
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href="/api/assessment/pdf"
+              download
+              className="rounded-lg bg-brand-green px-6 py-3 text-sm font-semibold text-white hover:bg-[#1aa584] transition-colors"
+            >
+              Download PDF
+            </a>
+            <Link
+              href="/"
+              className="rounded-lg bg-brand-purple px-6 py-3 text-sm font-semibold text-white hover:bg-[#2d56a8] transition-colors"
+            >
+              Return Home
+            </Link>
+          </div>
         </div>
       </main>
     </>

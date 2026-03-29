@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendResultsEmail } from "@/lib/email";
+import { generateResultsPdf } from "@/lib/pdf";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -12,6 +14,10 @@ export async function POST(request: Request) {
 
   const assessment = await prisma.assessment.findFirst({
     where: { id: assessmentId, userId: session.user.id },
+    include: {
+      responses: true,
+      selfRatings: true,
+    },
   });
 
   if (!assessment) {
@@ -22,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Assessment already submitted" }, { status: 400 });
   }
 
-  const updated = await prisma.assessment.update({
+  await prisma.assessment.update({
     where: { id: assessmentId },
     data: {
       status: "SUBMITTED",
@@ -30,5 +36,44 @@ export async function POST(request: Request) {
     },
   });
 
-  return NextResponse.json(updated);
+  // Calculate average self-rating
+  const avgRating =
+    assessment.selfRatings.length > 0
+      ? assessment.selfRatings.reduce((sum, r) => sum + r.rating, 0) /
+        assessment.selfRatings.length
+      : 0;
+
+  // Generate PDF (non-blocking — submission succeeds even if PDF fails)
+  let pdfBuffer: Buffer | undefined;
+  try {
+    pdfBuffer = generateResultsPdf(
+      assessment.responses,
+      assessment.selfRatings
+    );
+  } catch (pdfErr) {
+    console.error("PDF generation failed:", pdfErr);
+  }
+
+  // Send results email to the authenticated user
+  let emailSent = false;
+  if (session.user.email) {
+    try {
+      const emailResult = await sendResultsEmail(
+        session.user.email,
+        assessment.responses,
+        assessment.selfRatings,
+        pdfBuffer
+      );
+      emailSent = emailResult.success;
+    } catch (emailErr) {
+      console.error("Email send failed:", emailErr);
+    }
+  }
+
+  return NextResponse.json({
+    success: true,
+    avgRating: Number(avgRating.toFixed(1)),
+    ratingsCount: assessment.selfRatings.length,
+    emailSent,
+  });
 }
