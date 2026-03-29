@@ -135,7 +135,9 @@ export default function AdminPage() {
               </p>
             </div>
           ) : (
-            <div className="bg-card rounded-xl border border-card-border overflow-hidden">
+            <>
+            {/* Desktop table */}
+            <div className="hidden sm:block bg-card rounded-xl border border-card-border overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-[#161923] border-b border-card-border">
@@ -217,6 +219,66 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile cards */}
+            <div className="sm:hidden space-y-3">
+              {assessments.map((a) => {
+                const avg = parseFloat(getAverageRating(a.selfRatings) as string);
+                return (
+                  <div key={a.id} className="bg-card rounded-xl border border-card-border p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-foreground">
+                            {a.user.name || "Unnamed"}
+                          </span>
+                          {a.user.role === "GUEST" && (
+                            <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-amber-900/20 text-amber-400 border border-amber-800/30">
+                              Guest
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted">
+                          {a.user.email}
+                        </div>
+                      </div>
+                      {a.adminRatings.length > 0 ? (
+                        <span className="text-xs font-medium text-brand-green">
+                          Reviewed
+                        </span>
+                      ) : (
+                        <span className="text-xs font-medium text-amber-400">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-muted">
+                          {a.submittedAt
+                            ? new Date(a.submittedAt).toLocaleDateString()
+                            : "-"}
+                        </span>
+                        {avg > 0 && (
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${getRatingColor(avg)}`}
+                          >
+                            Avg: {avg}
+                          </span>
+                        )}
+                      </div>
+                      <Link
+                        href={`/admin/responses/${a.id}`}
+                        className="text-brand-purple hover:text-brand-blue font-medium text-sm"
+                      >
+                        View &rarr;
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            </>
           )}
 
           {/* Competency Legend */}

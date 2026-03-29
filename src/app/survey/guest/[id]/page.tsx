@@ -367,9 +367,9 @@ export default function GuestSurveyPage({
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <h1 className="text-xl font-bold text-foreground">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">
                 Competency Assessment
               </h1>
               <div className="flex items-center gap-3">
@@ -381,7 +381,7 @@ export default function GuestSurveyPage({
                     Last saved {lastSaved}
                   </span>
                 )}
-                <span className="text-sm font-medium text-muted">
+                <span className="text-xs sm:text-sm font-medium text-muted">
                   {totalAnswered}/{totalQuestions} questions &middot;{" "}
                   {progressPercent}%
                 </span>
@@ -526,16 +526,16 @@ export default function GuestSurveyPage({
                     Exceptional, 7-8 = Strong, 5-6 = Developing, 3-4 =
                     Emerging, 1-2 = Gap
                   </p>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-5 sm:flex gap-2">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                       <button
                         key={n}
                         onClick={() => saveRating(competency.rank, n)}
-                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
+                        className={`h-10 rounded-lg text-sm font-medium transition-all ${
                           ratings[competency.rank] === n
                             ? "bg-brand-purple text-white shadow-md scale-110"
                             : "bg-card-border text-muted hover:bg-[#2a2d40]"
-                        }`}
+                        } sm:w-10`}
                       >
                         {n}
                       </button>

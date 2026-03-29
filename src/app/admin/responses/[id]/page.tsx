@@ -208,7 +208,7 @@ export default function AssessmentDetailPage({
             <h2 className="text-sm font-semibold text-muted mb-4">
               Rating Summary
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               {competencies.map((c) => {
                 const selfR = getSelfRating(c.rank);
                 const adminR = adminRatings[c.rank]?.rating;
@@ -286,7 +286,7 @@ export default function AssessmentDetailPage({
                 >
                   {/* Competency Header */}
                   <div className="p-6 border-b border-card-border">
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                       <div className="flex items-start gap-3">
                         <span className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-purple/15 text-brand-purple font-bold text-sm shrink-0">
                           {c.rank}
@@ -302,14 +302,14 @@ export default function AssessmentDetailPage({
                           </span>
                         </div>
                       </div>
-                      <div className="text-right flex items-start gap-4">
+                      <div className="flex flex-wrap items-start gap-2 sm:gap-4 mt-2 sm:mt-0 sm:text-right">
                         {(() => {
                           const ai = getAiScore(c.rank);
                           return ai ? (
                             <div>
                               <div className="text-xs text-muted">AI Score</div>
                               <span
-                                className={`inline-block mt-1 px-3 py-1 rounded-lg text-sm font-bold border ${getRatingColor(ai.score)}`}
+                                className={`inline-block mt-1 px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-bold border ${getRatingColor(ai.score)}`}
                               >
                                 {ai.score}/10 - {getRatingLabel(ai.score)}
                               </span>
@@ -322,7 +322,7 @@ export default function AssessmentDetailPage({
                               Self-Rating
                             </div>
                             <span
-                              className={`inline-block mt-1 px-3 py-1 rounded-lg text-sm font-bold border ${getRatingColor(selfRating)}`}
+                              className={`inline-block mt-1 px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-bold border ${getRatingColor(selfRating)}`}
                             >
                               {selfRating}/10 - {getRatingLabel(selfRating)}
                             </span>
@@ -376,12 +376,12 @@ export default function AssessmentDetailPage({
                     <h4 className="text-sm font-semibold text-foreground mb-3">
                       Admin Rating
                     </h4>
-                    <div className="flex flex-wrap items-end gap-4">
+                    <div className="space-y-3">
                       <div>
                         <label className="block text-xs text-muted mb-1">
                           Rating (1-10)
                         </label>
-                        <div className="flex gap-1">
+                        <div className="grid grid-cols-5 sm:flex gap-1">
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                             <button
                               key={n}
@@ -395,48 +395,50 @@ export default function AssessmentDetailPage({
                                   },
                                 }))
                               }
-                              className={`w-8 h-8 rounded text-xs font-medium transition-all ${
+                              className={`h-8 rounded text-xs font-medium transition-all ${
                                 currentAdminRating.rating === n
                                   ? "bg-brand-purple text-white shadow-md"
                                   : "bg-card-border text-muted border border-card-border hover:bg-[#2a2d40]"
-                              }`}
+                              } sm:w-8`}
                             >
                               {n}
                             </button>
                           ))}
                         </div>
                       </div>
-                      <div className="flex-1 min-w-48">
-                        <label className="block text-xs text-muted mb-1">
-                          Notes (optional)
-                        </label>
-                        <input
-                          type="text"
-                          value={currentAdminRating.notes}
-                          onChange={(e) =>
-                            setAdminRatings((prev) => ({
-                              ...prev,
-                              [c.rank]: {
-                                ...prev[c.rank],
-                                rating: prev[c.rank]?.rating || 0,
-                                notes: e.target.value,
-                              },
-                            }))
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex-1">
+                          <label className="block text-xs text-muted mb-1">
+                            Notes (optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={currentAdminRating.notes}
+                            onChange={(e) =>
+                              setAdminRatings((prev) => ({
+                                ...prev,
+                                [c.rank]: {
+                                  ...prev[c.rank],
+                                  rating: prev[c.rank]?.rating || 0,
+                                  notes: e.target.value,
+                                },
+                              }))
+                            }
+                            className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-purple placeholder:text-muted"
+                            placeholder="Add notes about this competency..."
+                          />
+                        </div>
+                        <button
+                          onClick={() => saveAdminRating(c.rank)}
+                          disabled={
+                            !currentAdminRating.rating ||
+                            savingRating === c.rank
                           }
-                          className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-purple placeholder:text-muted"
-                          placeholder="Add notes about this competency..."
-                        />
+                          className="rounded-lg bg-brand-purple px-4 py-1.5 text-sm font-medium text-white hover:bg-[#2d56a8] disabled:opacity-50 transition-colors self-end"
+                        >
+                          {savingRating === c.rank ? "Saving..." : "Save"}
+                        </button>
                       </div>
-                      <button
-                        onClick={() => saveAdminRating(c.rank)}
-                        disabled={
-                          !currentAdminRating.rating ||
-                          savingRating === c.rank
-                        }
-                        className="rounded-lg bg-brand-purple px-4 py-1.5 text-sm font-medium text-white hover:bg-[#2d56a8] disabled:opacity-50 transition-colors"
-                      >
-                        {savingRating === c.rank ? "Saving..." : "Save"}
-                      </button>
                     </div>
                   </div>
                 </div>
