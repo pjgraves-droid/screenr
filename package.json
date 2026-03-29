@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@libsql/client": "^0.17.2",
     "@prisma/adapter-libsql": "^7.6.0",
