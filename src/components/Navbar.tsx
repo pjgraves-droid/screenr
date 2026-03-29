@@ -64,7 +64,7 @@ export default function Navbar() {
                   href="/register"
                   className="rounded-md bg-brand-purple px-4 py-2 text-sm font-medium text-white hover:bg-[#2d56a8] transition-colors"
                 >
-                  Get Started
+                  Create Account
                 </Link>
               </>
             )}
