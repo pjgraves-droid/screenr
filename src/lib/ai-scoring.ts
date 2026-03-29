@@ -134,24 +134,32 @@ export async function scoreAssessment(
 
     const validated = parseAndValidateScores(textBlock.text.trim());
 
-    // Check if we got all competencies
-    if (validated.length >= expectedCount) {
-      return validated;
+    // Deduplicate: keep only the first entry per competencyRank
+    const seen = new Set<number>();
+    const deduped = validated.filter((s) => {
+      if (seen.has(s.competencyRank)) return false;
+      seen.add(s.competencyRank);
+      return true;
+    });
+
+    // Check if we got all unique competencies
+    if (deduped.length >= expectedCount) {
+      return deduped;
     }
 
     // If we got some but not all, check which are missing
-    const gotRanks = new Set(validated.map((s) => s.competencyRank));
+    const gotRanks = new Set(deduped.map((s) => s.competencyRank));
     const missingRanks = competencies
       .map((c) => c.rank)
       .filter((r) => !gotRanks.has(r));
 
     console.log(
-      `AI scoring attempt ${attempt + 1}: got ${validated.length}/${expectedCount} scores. Missing ranks: ${missingRanks.join(", ")}`
+      `AI scoring attempt ${attempt + 1}: got ${deduped.length}/${expectedCount} unique scores. Missing ranks: ${missingRanks.join(", ")}`
     );
 
     // On last attempt, return whatever we have
     if (attempt === 2) {
-      return validated;
+      return deduped;
     }
   }
 
