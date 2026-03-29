@@ -31,8 +31,9 @@ export async function GET() {
     return NextResponse.json(assessment);
   } catch (error) {
     console.error("Assessment GET error:", error);
+    const detail = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "Failed to load assessment. Please try again." },
+      { error: "Failed to load assessment. Please try again.", detail },
       { status: 500 }
     );
   }
