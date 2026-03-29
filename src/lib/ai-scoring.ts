@@ -19,24 +19,28 @@ interface AiScoreResult {
   rationale: string;
 }
 
-function buildPrompt(
+function buildBatchPrompt(
+  competencyBatch: typeof competencies,
   responses: ResponseData[],
   selfRatings: SelfRatingData[]
 ): string {
-  let prompt = `You are an expert executive talent assessor. You are evaluating a candidate's responses to an Executive Competency Assessment for a high-growth AI company (Cognition).
+  const count = competencyBatch.length;
+  const ranks = competencyBatch.map((c) => c.rank).join(", ");
 
-For each competency, score the candidate's responses from 1-10 using this scale:
-- 9-10 Exceptional: Best-in-class evidence. Would be a standout.
-- 7-8 Strong: Clear, proven evidence with specific examples.
-- 5-6 Developing: Some evidence but gaps in depth, recency, or relevance.
-- 3-4 Emerging: Limited evidence. Requires significant development.
-- 1-2 Gap: No meaningful evidence.
+  let prompt = `You are an expert executive talent assessor evaluating a candidate for a high-growth AI company (Cognition).
 
-Score based on the QUALITY and SPECIFICITY of the answers — look for concrete examples, metrics, named companies/deals, and self-awareness. Vague or generic answers should score lower. Empty or very short answers should score 1-2.
+Score each competency from 1-10:
+- 9-10 Exceptional: Best-in-class evidence
+- 7-8 Strong: Clear, proven evidence with specific examples
+- 5-6 Developing: Some evidence but gaps
+- 3-4 Emerging: Limited evidence
+- 1-2 Gap: No meaningful evidence
 
-Here are the candidate's responses:\n\n`;
+Score based on QUALITY and SPECIFICITY — concrete examples, metrics, named companies/deals. Vague or empty answers score 1-2.
 
-  for (const comp of competencies) {
+Candidate responses:\n\n`;
+
+  for (const comp of competencyBatch) {
     const compResponses = responses.filter(
       (r) => r.competencyRank === comp.rank
     );
@@ -47,7 +51,7 @@ Here are the candidate's responses:\n\n`;
     prompt += `---\nCOMPETENCY ${comp.rank}: ${comp.name} (${comp.category})\n`;
     prompt += `Description: ${comp.description}\n`;
     if (selfRating) {
-      prompt += `Candidate Self-Rating: ${selfRating.rating}/10\n`;
+      prompt += `Self-Rating: ${selfRating.rating}/10\n`;
     }
     prompt += `\n`;
 
@@ -59,19 +63,12 @@ Here are the candidate's responses:\n\n`;
     }
   }
 
-  prompt += `---\n\nYou MUST respond with a valid JSON array containing EXACTLY 10 objects — one for each competency (ranks 1 through 10). Do not skip any competency. Each object must have exactly these fields:
-- "competencyRank": number (1-10)
-- "score": number (1-10)  
-- "rationale": string (1-2 sentences, be concise)
+  prompt += `---\n\nRespond with a JSON array of EXACTLY ${count} objects for competency ranks ${ranks}. Each object:
+- "competencyRank": number
+- "score": number (1-10)
+- "rationale": string (1 sentence)
 
-Example format:
-[
-  {"competencyRank": 1, "score": 7, "rationale": "Strong example of building from scratch. However, the 30-day plan lacked specificity."},
-  {"competencyRank": 2, "score": 5, "rationale": "Some evidence of work ethic but lacked concrete metrics."},
-  ... (continue for ALL 10 competencies)
-]
-
-IMPORTANT: You must include ALL 10 competencies (ranks 1-10). Return ONLY the JSON array, no other text.`;
+Return ONLY the JSON array.`;
 
   return prompt;
 }
@@ -100,6 +97,36 @@ function parseAndValidateScores(rawText: string): AiScoreResult[] {
     }));
 }
 
+async function scoreBatch(
+  client: Anthropic,
+  batch: typeof competencies,
+  responses: ResponseData[],
+  selfRatings: SelfRatingData[]
+): Promise<AiScoreResult[]> {
+  const prompt = buildBatchPrompt(batch, responses, selfRatings);
+
+  const message = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 4096,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const textBlock = message.content.find((block) => block.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new Error("No text response from AI model");
+  }
+
+  const validated = parseAndValidateScores(textBlock.text.trim());
+
+  // Deduplicate by competencyRank
+  const seen = new Set<number>();
+  return validated.filter((s) => {
+    if (seen.has(s.competencyRank)) return false;
+    seen.add(s.competencyRank);
+    return true;
+  });
+}
+
 export async function scoreAssessment(
   assessmentId: string,
   responses: ResponseData[],
@@ -111,66 +138,40 @@ export async function scoreAssessment(
   }
 
   const client = new Anthropic({ apiKey });
-  const prompt = buildPrompt(responses, selfRatings);
-  const expectedCount = competencies.length;
 
-  // Try up to 3 times to get all competency scores
-  let lastResult: AiScoreResult[] = [];
+  // Split competencies into two batches and score in parallel
+  const mid = Math.ceil(competencies.length / 2);
+  const batch1 = competencies.slice(0, mid);
+  const batch2 = competencies.slice(mid);
 
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const message = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 8192,
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      });
+  const [results1, results2] = await Promise.allSettled([
+    scoreBatch(client, batch1, responses, selfRatings),
+    scoreBatch(client, batch2, responses, selfRatings),
+  ]);
 
-      const textBlock = message.content.find((block) => block.type === "text");
-      if (!textBlock || textBlock.type !== "text") {
-        throw new Error("No text response from AI model");
-      }
+  const allScores: AiScoreResult[] = [];
 
-      const validated = parseAndValidateScores(textBlock.text.trim());
-
-      // Deduplicate: keep only the first entry per competencyRank
-      const seen = new Set<number>();
-      const deduped = validated.filter((s) => {
-        if (seen.has(s.competencyRank)) return false;
-        seen.add(s.competencyRank);
-        return true;
-      });
-
-      lastResult = deduped;
-
-      // Check if we got all unique competencies
-      if (deduped.length >= expectedCount) {
-        return deduped;
-      }
-
-      // If we got some but not all, check which are missing
-      const gotRanks = new Set(deduped.map((s) => s.competencyRank));
-      const missingRanks = competencies
-        .map((c) => c.rank)
-        .filter((r) => !gotRanks.has(r));
-
-      console.log(
-        `AI scoring attempt ${attempt + 1}: got ${deduped.length}/${expectedCount} unique scores. Missing ranks: ${missingRanks.join(", ")}`
-      );
-    } catch (error) {
-      console.error(`AI scoring attempt ${attempt + 1} failed:`, error);
-      // On last attempt, re-throw if we have no results at all
-      if (attempt === 2 && lastResult.length === 0) {
-        throw error;
-      }
-    }
+  if (results1.status === "fulfilled") {
+    allScores.push(...results1.value);
+  } else {
+    console.error("AI scoring batch 1 failed:", results1.reason);
   }
 
-  return lastResult;
+  if (results2.status === "fulfilled") {
+    allScores.push(...results2.value);
+  } else {
+    console.error("AI scoring batch 2 failed:", results2.reason);
+  }
+
+  if (allScores.length === 0) {
+    throw new Error("AI scoring failed: both batches returned no results");
+  }
+
+  console.log(
+    `AI scoring complete: ${allScores.length}/${competencies.length} competencies scored`
+  );
+
+  return allScores;
 }
 
 export async function scoreAndSave(
