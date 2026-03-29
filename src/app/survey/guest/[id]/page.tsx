@@ -61,7 +61,7 @@ export default function GuestSurveyPage({
         if (!data.id) throw new Error("Invalid assessment data");
         setAssessment(data);
         if (data.status === "SUBMITTED") {
-          setSubmitResult({ success: true, emailSent: true });
+          setSubmitResult({ success: true, emailSent: false });
           return;
         }
         const answerMap: Record<string, string> = {};
@@ -211,15 +211,19 @@ export default function GuestSurveyPage({
             <p className="text-muted mb-2">
               Thank you for completing the Executive Competency Assessment.
             </p>
-            {submitResult.emailSent ? (
+            {submitResult.emailSent && email ? (
               <p className="text-brand-green text-sm mb-8">
                 Your results have been sent to <strong>{email}</strong>.
               </p>
-            ) : (
+            ) : email ? (
               <p className="text-amber-400 text-sm mb-8">
                 Your responses have been recorded. Email delivery is not
                 currently configured — please contact the administrator for your
                 results.
+              </p>
+            ) : (
+              <p className="text-muted text-sm mb-8">
+                Your responses have been recorded.
               </p>
             )}
             <button

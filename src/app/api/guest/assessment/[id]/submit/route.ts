@@ -49,20 +49,20 @@ export async function POST(
       );
     }
 
-    // Update the guest user's email to the real email
-    await prisma.user.update({
-      where: { id: assessment.user.id },
-      data: { email, name: email.split("@")[0] },
-    });
-
-    // Mark assessment as submitted
-    await prisma.assessment.update({
-      where: { id },
-      data: {
-        status: "SUBMITTED",
-        submittedAt: new Date(),
-      },
-    });
+    // Update user email and mark assessment as submitted atomically
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: assessment.user.id },
+        data: { email, name: email.split("@")[0] },
+      }),
+      prisma.assessment.update({
+        where: { id },
+        data: {
+          status: "SUBMITTED",
+          submittedAt: new Date(),
+        },
+      }),
+    ]);
 
     // Send results email
     const emailResult = await sendResultsEmail(
