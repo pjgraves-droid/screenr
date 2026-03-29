@@ -77,7 +77,7 @@ export default function AdminPage() {
       <>
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-slate-500">Loading...</div>
+          <div className="text-muted">Loading...</div>
         </main>
       </>
     );
@@ -86,28 +86,28 @@ export default function AdminPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 bg-slate-50">
+      <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-foreground">
               Admin Dashboard
             </h1>
-            <p className="text-slate-500 mt-1">
+            <p className="text-muted mt-1">
               Review submitted candidate assessments
             </p>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-              <div className="text-sm text-slate-500">Total Submissions</div>
-              <div className="text-3xl font-bold text-slate-900 mt-1">
+            <div className="bg-card rounded-xl border border-card-border p-5">
+              <div className="text-sm text-muted">Total Submissions</div>
+              <div className="text-3xl font-bold text-foreground mt-1">
                 {assessments.length}
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-              <div className="text-sm text-slate-500">Avg Self-Rating</div>
-              <div className="text-3xl font-bold text-slate-900 mt-1">
+            <div className="bg-card rounded-xl border border-card-border p-5">
+              <div className="text-sm text-muted">Avg Self-Rating</div>
+              <div className="text-3xl font-bold text-foreground mt-1">
                 {assessments.length > 0
                   ? (
                       assessments.reduce(
@@ -119,56 +119,56 @@ export default function AdminPage() {
                   : "N/A"}
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-              <div className="text-sm text-slate-500">Reviewed</div>
-              <div className="text-3xl font-bold text-slate-900 mt-1">
+            <div className="bg-card rounded-xl border border-card-border p-5">
+              <div className="text-sm text-muted">Reviewed</div>
+              <div className="text-3xl font-bold text-foreground mt-1">
                 {assessments.filter((a) => a.adminRatings.length > 0).length}
               </div>
             </div>
           </div>
 
           {assessments.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
-              <p className="text-slate-500">
+            <div className="bg-card rounded-xl border border-card-border p-12 text-center">
+              <p className="text-muted">
                 No assessments have been submitted yet.
               </p>
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-card rounded-xl border border-card-border overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="text-left px-4 py-3 font-semibold text-slate-700">
+                  <tr className="bg-[#161923] border-b border-card-border">
+                    <th className="text-left px-4 py-3 font-semibold text-muted">
                       Candidate
                     </th>
-                    <th className="text-left px-4 py-3 font-semibold text-slate-700">
+                    <th className="text-left px-4 py-3 font-semibold text-muted">
                       Submitted
                     </th>
-                    <th className="text-left px-4 py-3 font-semibold text-slate-700">
+                    <th className="text-left px-4 py-3 font-semibold text-muted">
                       Self-Rating Avg
                     </th>
-                    <th className="text-left px-4 py-3 font-semibold text-slate-700">
+                    <th className="text-left px-4 py-3 font-semibold text-muted">
                       Status
                     </th>
-                    <th className="text-right px-4 py-3 font-semibold text-slate-700">
+                    <th className="text-right px-4 py-3 font-semibold text-muted">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-card-border">
                   {assessments.map((a) => {
                     const avg = parseFloat(getAverageRating(a.selfRatings) as string);
                     return (
-                      <tr key={a.id} className="hover:bg-slate-50">
+                      <tr key={a.id} className="hover:bg-card-border/30">
                         <td className="px-4 py-3">
-                          <div className="font-medium text-slate-900">
+                          <div className="font-medium text-foreground">
                             {a.user.name || "Unnamed"}
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-muted">
                             {a.user.email}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-slate-600">
+                        <td className="px-4 py-3 text-muted">
                           {a.submittedAt
                             ? new Date(a.submittedAt).toLocaleDateString()
                             : "-"}
@@ -181,16 +181,16 @@ export default function AdminPage() {
                               {avg}
                             </span>
                           ) : (
-                            <span className="text-slate-400">-</span>
+                            <span className="text-muted">-</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
                           {a.adminRatings.length > 0 ? (
-                            <span className="text-xs font-medium text-emerald-600">
+                            <span className="text-xs font-medium text-brand-green">
                               Reviewed
                             </span>
                           ) : (
-                            <span className="text-xs font-medium text-amber-600">
+                            <span className="text-xs font-medium text-amber-400">
                               Pending Review
                             </span>
                           )}
@@ -198,7 +198,7 @@ export default function AdminPage() {
                         <td className="px-4 py-3 text-right">
                           <Link
                             href={`/admin/responses/${a.id}`}
-                            className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                            className="text-brand-purple hover:text-brand-blue font-medium text-sm"
                           >
                             View Details &rarr;
                           </Link>
@@ -212,18 +212,18 @@ export default function AdminPage() {
           )}
 
           {/* Competency Legend */}
-          <div className="mt-8 bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">
+          <div className="mt-8 bg-card rounded-xl border border-card-border p-6">
+            <h2 className="text-sm font-semibold text-muted mb-4">
               Competency Reference
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {competencies.map((c) => (
-                <div key={c.rank} className="flex items-center gap-2 text-slate-600">
-                  <span className="font-bold text-slate-900 w-4">
+                <div key={c.rank} className="flex items-center gap-2 text-muted">
+                  <span className="font-bold text-foreground w-4">
                     {c.rank}.
                   </span>
                   {c.name}
-                  <span className="text-slate-400">
+                  <span className="text-muted/60">
                     ({categoryLabels[c.category]})
                   </span>
                 </div>

@@ -128,11 +128,11 @@ export default function AssessmentDetailPage({
   };
 
   const getRatingColor = (rating: number) => {
-    if (rating >= 9) return "text-emerald-700 bg-emerald-50 border-emerald-200";
-    if (rating >= 7) return "text-blue-700 bg-blue-50 border-blue-200";
-    if (rating >= 5) return "text-amber-700 bg-amber-50 border-amber-200";
-    if (rating >= 3) return "text-orange-700 bg-orange-50 border-orange-200";
-    return "text-red-700 bg-red-50 border-red-200";
+    if (rating >= 9) return "text-brand-green bg-brand-green/10 border-brand-green/30";
+    if (rating >= 7) return "text-brand-blue bg-brand-blue/10 border-brand-blue/30";
+    if (rating >= 5) return "text-amber-400 bg-amber-900/20 border-amber-800/30";
+    if (rating >= 3) return "text-orange-400 bg-orange-900/20 border-orange-800/30";
+    return "text-red-400 bg-red-900/20 border-red-800/30";
   };
 
   if (status === "loading" || loading) {
@@ -140,7 +140,7 @@ export default function AssessmentDetailPage({
       <>
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-slate-500">Loading...</div>
+          <div className="text-muted">Loading...</div>
         </main>
       </>
     );
@@ -151,7 +151,7 @@ export default function AssessmentDetailPage({
       <>
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-slate-500">Assessment not found</div>
+          <div className="text-muted">Assessment not found</div>
         </main>
       </>
     );
@@ -160,22 +160,22 @@ export default function AssessmentDetailPage({
   return (
     <>
       <Navbar />
-      <main className="flex-1 bg-slate-50">
+      <main className="flex-1">
         <div className="max-w-5xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-6">
             <Link
               href="/admin"
-              className="text-sm text-indigo-600 hover:text-indigo-700 mb-2 inline-block"
+              className="text-sm text-brand-purple hover:text-brand-blue mb-2 inline-block"
             >
               &larr; Back to Dashboard
             </Link>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-bold text-foreground">
                   {assessment.user.name || "Unnamed Candidate"}
                 </h1>
-                <p className="text-slate-500">
+                <p className="text-muted">
                   {assessment.user.email} &middot; Submitted{" "}
                   {assessment.submittedAt
                     ? new Date(assessment.submittedAt).toLocaleDateString()
@@ -186,8 +186,8 @@ export default function AssessmentDetailPage({
           </div>
 
           {/* Summary Ratings */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm mb-6">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">
+          <div className="bg-card rounded-xl border border-card-border p-6 mb-6">
+            <h2 className="text-sm font-semibold text-muted mb-4">
               Rating Summary
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -197,9 +197,9 @@ export default function AssessmentDetailPage({
                 return (
                   <div
                     key={c.rank}
-                    className="text-center p-3 rounded-lg border border-slate-100"
+                    className="text-center p-3 rounded-lg border border-card-border"
                   >
-                    <div className="text-xs text-slate-500 mb-1 truncate">
+                    <div className="text-xs text-muted mb-1 truncate">
                       {c.rank}. {c.name}
                     </div>
                     <div className="flex items-center justify-center gap-2">
@@ -220,7 +220,7 @@ export default function AssessmentDetailPage({
                         </span>
                       )}
                       {!selfR && !adminR && (
-                        <span className="text-xs text-slate-400">-</span>
+                        <span className="text-xs text-muted">-</span>
                       )}
                     </div>
                   </div>
@@ -230,11 +230,11 @@ export default function AssessmentDetailPage({
           </div>
 
           {/* Scoring Guide */}
-          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm mb-6">
+          <div className="bg-card rounded-xl border border-card-border p-4 mb-6">
             <div className="flex flex-wrap gap-3 text-xs">
               {scoringGuide.map((s) => (
-                <span key={s.range} className="text-slate-500">
-                  <span className="font-bold text-slate-700">{s.range}</span> ={" "}
+                <span key={s.range} className="text-muted">
+                  <span className="font-bold text-foreground">{s.range}</span> ={" "}
                   {s.level}
                 </span>
               ))}
@@ -253,17 +253,17 @@ export default function AssessmentDetailPage({
               return (
                 <div
                   key={c.rank}
-                  className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+                  className="bg-card rounded-xl border border-card-border overflow-hidden"
                 >
                   {/* Competency Header */}
-                  <div className="p-6 border-b border-slate-100">
+                  <div className="p-6 border-b border-card-border">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm shrink-0">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-purple/15 text-brand-purple font-bold text-sm shrink-0">
                           {c.rank}
                         </span>
                         <div>
-                          <h3 className="font-semibold text-slate-900">
+                          <h3 className="font-semibold text-foreground">
                             {c.name}
                           </h3>
                           <span
@@ -275,7 +275,7 @@ export default function AssessmentDetailPage({
                       </div>
                       {selfRating && (
                         <div className="text-right">
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-muted">
                             Self-Rating
                           </div>
                           <span
@@ -294,15 +294,15 @@ export default function AssessmentDetailPage({
                       const answer = getResponseForQuestion(c.rank, qi);
                       return (
                         <div key={qi}>
-                          <div className="text-sm font-medium text-slate-700 mb-1">
-                            <span className="text-indigo-500">
+                          <div className="text-sm font-medium text-foreground mb-1">
+                            <span className="text-brand-blue">
                               Q{qi + 1}.
                             </span>{" "}
                             {question}
                           </div>
-                          <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 whitespace-pre-wrap">
+                          <div className="bg-background rounded-lg p-4 text-sm text-foreground/90 whitespace-pre-wrap border border-card-border">
                             {answer || (
-                              <span className="text-slate-400 italic">
+                              <span className="text-muted italic">
                                 No response provided
                               </span>
                             )}
@@ -313,13 +313,13 @@ export default function AssessmentDetailPage({
                   </div>
 
                   {/* Admin Rating */}
-                  <div className="p-6 bg-indigo-50/50 border-t border-slate-200">
-                    <h4 className="text-sm font-semibold text-slate-700 mb-3">
+                  <div className="p-6 bg-brand-purple/5 border-t border-card-border">
+                    <h4 className="text-sm font-semibold text-foreground mb-3">
                       Admin Rating
                     </h4>
                     <div className="flex flex-wrap items-end gap-4">
                       <div>
-                        <label className="block text-xs text-slate-500 mb-1">
+                        <label className="block text-xs text-muted mb-1">
                           Rating (1-10)
                         </label>
                         <div className="flex gap-1">
@@ -338,8 +338,8 @@ export default function AssessmentDetailPage({
                               }
                               className={`w-8 h-8 rounded text-xs font-medium transition-all ${
                                 currentAdminRating.rating === n
-                                  ? "bg-indigo-600 text-white shadow-md"
-                                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                                  ? "bg-brand-purple text-white shadow-md"
+                                  : "bg-card-border text-muted border border-card-border hover:bg-[#2a2d40]"
                               }`}
                             >
                               {n}
@@ -348,7 +348,7 @@ export default function AssessmentDetailPage({
                         </div>
                       </div>
                       <div className="flex-1 min-w-48">
-                        <label className="block text-xs text-slate-500 mb-1">
+                        <label className="block text-xs text-muted mb-1">
                           Notes (optional)
                         </label>
                         <input
@@ -364,7 +364,7 @@ export default function AssessmentDetailPage({
                               },
                             }))
                           }
-                          className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-purple placeholder:text-muted"
                           placeholder="Add notes about this competency..."
                         />
                       </div>
@@ -374,7 +374,7 @@ export default function AssessmentDetailPage({
                           !currentAdminRating.rating ||
                           savingRating === c.rank
                         }
-                        className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                        className="rounded-lg bg-brand-purple px-4 py-1.5 text-sm font-medium text-white hover:bg-[#2d56a8] disabled:opacity-50 transition-colors"
                       >
                         {savingRating === c.rank ? "Saving..." : "Save"}
                       </button>

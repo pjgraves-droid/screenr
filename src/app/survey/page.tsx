@@ -172,10 +172,10 @@ export default function SurveyPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-red-600 mb-4">{loadError}</div>
+            <div className="text-red-400 mb-4">{loadError}</div>
             <button
               onClick={() => window.location.reload()}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+              className="rounded-lg bg-brand-purple px-4 py-2 text-sm font-medium text-white hover:bg-[#2d56a8] transition-colors"
             >
               Retry
             </button>
@@ -190,7 +190,7 @@ export default function SurveyPage() {
       <>
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-slate-500">Loading assessment...</div>
+          <div className="text-muted">Loading assessment...</div>
         </main>
       </>
     );
@@ -199,31 +199,31 @@ export default function SurveyPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 bg-slate-50">
+      <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-xl font-bold text-slate-900">
+              <h1 className="text-xl font-bold text-foreground">
                 Competency Assessment
               </h1>
               <div className="flex items-center gap-3">
                 {saving && (
-                  <span className="text-xs text-amber-600">Saving...</span>
+                  <span className="text-xs text-brand-green">Saving...</span>
                 )}
                 {lastSaved && !saving && (
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-muted">
                     Last saved {lastSaved}
                   </span>
                 )}
-                <span className="text-sm font-medium text-slate-600">
+                <span className="text-sm font-medium text-muted">
                   {totalAnswered}/{totalQuestions} questions &middot; {progressPercent}%
                 </span>
               </div>
             </div>
-            <div className="w-full bg-slate-200 rounded-full h-2">
+            <div className="w-full bg-card-border rounded-full h-2">
               <div
-                className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
+                className="bg-brand-purple h-2 rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -232,13 +232,13 @@ export default function SurveyPage() {
           <div className="grid grid-cols-12 gap-6">
             {/* Sidebar Navigation */}
             <div className="col-span-12 lg:col-span-3">
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden sticky top-8">
-                <div className="p-3 bg-slate-50 border-b border-slate-200">
-                  <h2 className="text-sm font-semibold text-slate-700">
+              <div className="bg-card rounded-xl border border-card-border overflow-hidden sticky top-8">
+                <div className="p-3 bg-[#161923] border-b border-card-border">
+                  <h2 className="text-sm font-semibold text-muted">
                     Competencies
                   </h2>
                 </div>
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-card-border">
                   {competencies.map((c, idx) => {
                     const answered = c.questions.filter(
                       (_, qi) =>
@@ -253,25 +253,25 @@ export default function SurveyPage() {
                         onClick={() => setCurrentStep(idx)}
                         className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${
                           currentStep === idx
-                            ? "bg-indigo-50 text-indigo-700 font-medium"
-                            : "text-slate-600 hover:bg-slate-50"
+                            ? "bg-brand-purple/10 text-brand-purple font-medium"
+                            : "text-muted hover:bg-card-border/50"
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           <span
                             className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${
                               isComplete
-                                ? "bg-emerald-100 text-emerald-700"
+                                ? "bg-brand-green/15 text-brand-green"
                                 : currentStep === idx
-                                ? "bg-indigo-100 text-indigo-700"
-                                : "bg-slate-100 text-slate-500"
+                                ? "bg-brand-purple/15 text-brand-purple"
+                                : "bg-card-border text-muted"
                             }`}
                           >
                             {isComplete ? "\u2713" : c.rank}
                           </span>
                           <span className="truncate">{c.name}</span>
                         </div>
-                        <div className="ml-7 mt-0.5 text-xs text-slate-400">
+                        <div className="ml-7 mt-0.5 text-xs text-muted">
                           {answered}/{c.questions.length} answered
                         </div>
                       </button>
@@ -283,15 +283,15 @@ export default function SurveyPage() {
 
             {/* Main Content */}
             <div className="col-span-12 lg:col-span-9">
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
+              <div className="bg-card rounded-xl border border-card-border p-6 sm:p-8">
                 {/* Competency Header */}
                 <div className="mb-6">
                   <div className="flex items-start gap-3 mb-3">
-                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold text-lg shrink-0">
+                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-brand-purple/15 text-brand-purple font-bold text-lg shrink-0">
                       {competency.rank}
                     </span>
                     <div>
-                      <h2 className="text-xl font-bold text-slate-900">
+                      <h2 className="text-xl font-bold text-foreground">
                         {competency.name}
                       </h2>
                       <span
@@ -301,13 +301,13 @@ export default function SurveyPage() {
                       </span>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-600 mb-2">
+                  <p className="text-sm text-muted mb-2">
                     {competency.description}
                   </p>
-                  <div className="text-xs text-slate-400">
-                    <span className="font-medium">Founders Fund Principle:</span>{" "}
+                  <div className="text-xs text-muted">
+                    <span className="font-medium text-foreground/70">Founders Fund Principle:</span>{" "}
                     {competency.foundersFundPrinciple} &middot;{" "}
-                    <span className="font-medium">Cognition Signal:</span>{" "}
+                    <span className="font-medium text-foreground/70">Cognition Signal:</span>{" "}
                     {competency.cognitionSignal}
                   </div>
                 </div>
@@ -318,27 +318,27 @@ export default function SurveyPage() {
                     const key = `${competency.rank}-${qi}`;
                     return (
                       <div key={qi}>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                          <span className="text-indigo-500 mr-1">
-                            Q{qi + 1}.
-                          </span>
-                          {question}
-                        </label>
-                        <textarea
-                          value={answers[key] || ""}
-                          onChange={(e) =>
-                            handleAnswerChange(
-                              competency.rank,
-                              qi,
-                              e.target.value
-                            )
-                          }
-                          onBlur={() =>
-                            handleAnswerBlur(competency.rank, qi)
-                          }
-                          rows={4}
-                          className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y"
-                          placeholder="Share your honest, detailed response..."
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            <span className="text-brand-blue mr-1">
+                              Q{qi + 1}.
+                            </span>
+                            {question}
+                          </label>
+                          <textarea
+                            value={answers[key] || ""}
+                            onChange={(e) =>
+                              handleAnswerChange(
+                                competency.rank,
+                                qi,
+                                e.target.value
+                              )
+                            }
+                            onBlur={() =>
+                              handleAnswerBlur(competency.rank, qi)
+                            }
+                            rows={4}
+                            className="w-full rounded-lg border border-card-border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent resize-y placeholder:text-muted"
+                            placeholder="Share your honest, detailed response..."
                         />
                       </div>
                     );
@@ -346,11 +346,11 @@ export default function SurveyPage() {
                 </div>
 
                 {/* Self Rating */}
-                <div className="mt-8 pt-6 border-t border-slate-200">
-                  <h3 className="text-sm font-semibold text-slate-700 mb-3">
+                <div className="mt-8 pt-6 border-t border-card-border">
+                  <h3 className="text-sm font-semibold text-foreground mb-3">
                     Self-Assessment Rating (1-10)
                   </h3>
-                  <p className="text-xs text-slate-500 mb-4">
+                  <p className="text-xs text-muted mb-4">
                     Rate yourself honestly on this competency. 9-10 = Exceptional, 7-8 = Strong, 5-6 = Developing, 3-4 = Emerging, 1-2 = Gap
                   </p>
                   <div className="flex gap-2">
@@ -360,8 +360,8 @@ export default function SurveyPage() {
                         onClick={() => saveRating(competency.rank, n)}
                         className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
                           ratings[competency.rank] === n
-                            ? "bg-indigo-600 text-white shadow-md scale-110"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            ? "bg-brand-purple text-white shadow-md scale-110"
+                            : "bg-card-border text-muted hover:bg-[#2a2d40]"
                         }`}
                       >
                         {n}
@@ -375,19 +375,19 @@ export default function SurveyPage() {
                   <button
                     onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                     disabled={currentStep === 0}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                    className="rounded-lg border border-card-border px-4 py-2 text-sm font-medium text-muted hover:bg-card-border/50 disabled:opacity-40 transition-colors"
                   >
                     &larr; Previous
                   </button>
 
-                  <span className="text-sm text-slate-400">
+                  <span className="text-sm text-muted">
                     {answeredQuestions}/{competency.questions.length} answered
                   </span>
 
                   {currentStep < competencies.length - 1 ? (
                     <button
                       onClick={() => setCurrentStep(currentStep + 1)}
-                      className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                      className="rounded-lg bg-brand-purple px-4 py-2 text-sm font-medium text-white hover:bg-[#2d56a8] transition-colors"
                     >
                       Next &rarr;
                     </button>
@@ -395,7 +395,7 @@ export default function SurveyPage() {
                     <button
                       onClick={handleSubmit}
                       disabled={submitting || totalAnswered === 0}
-                      className="rounded-lg bg-emerald-600 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      className="rounded-lg bg-brand-green px-6 py-2 text-sm font-medium text-white hover:bg-[#1aa584] disabled:opacity-50 transition-colors"
                     >
                       {submitting ? "Submitting..." : "Submit Assessment"}
                     </button>
