@@ -74,11 +74,9 @@ export async function POST(
     );
 
     // Run AI scoring (non-blocking — submission succeeds even if AI fails)
-    try {
-      await scoreAndSave(id, assessment.responses, assessment.selfRatings);
-    } catch (aiErr) {
+    scoreAndSave(id, assessment.responses, assessment.selfRatings).catch((aiErr) => {
       console.error("AI scoring failed:", aiErr);
-    }
+    });
 
     return NextResponse.json({
       success: true,
