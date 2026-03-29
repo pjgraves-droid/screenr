@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendResultsEmail } from "@/lib/email";
+import { generateResultsPdf } from "@/lib/pdf";
 
 export async function POST(
   request: Request,
@@ -52,11 +53,18 @@ export async function POST(
       },
     });
 
-    // Send results email
+    // Generate PDF
+    const pdfBuffer = generateResultsPdf(
+      assessment.responses,
+      assessment.selfRatings
+    );
+
+    // Send results email with PDF attachment
     const emailResult = await sendResultsEmail(
       email,
       assessment.responses,
-      assessment.selfRatings
+      assessment.selfRatings,
+      pdfBuffer
     );
 
     return NextResponse.json({

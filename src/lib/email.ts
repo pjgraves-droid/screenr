@@ -89,7 +89,8 @@ function buildResultsHtml(
 export async function sendResultsEmail(
   email: string,
   responses: ResponseData[],
-  selfRatings: SelfRatingData[]
+  selfRatings: SelfRatingData[],
+  pdfBuffer?: Buffer
 ): Promise<{ success: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -142,6 +143,16 @@ export async function sendResultsEmail(
       to: email,
       subject: "Your Executive Competency Assessment Results",
       html,
+      ...(pdfBuffer
+        ? {
+            attachments: [
+              {
+                filename: "Executive-Competency-Assessment.pdf",
+                content: pdfBuffer,
+              },
+            ],
+          }
+        : {}),
     });
     return { success: true };
   } catch (error) {
