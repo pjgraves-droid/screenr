@@ -156,7 +156,7 @@ export default function GuestSurveyPage({
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to submit assessment";
-      alert(message);
+      setEmailError(message);
       setSubmitting(false);
     }
   };

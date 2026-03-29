@@ -40,6 +40,15 @@ export async function POST(
       );
     }
 
+    // Check if email is already in use by another user
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser && existingUser.id !== assessment.user.id) {
+      return NextResponse.json(
+        { error: "This email is already in use. Please use a different email address." },
+        { status: 409 }
+      );
+    }
+
     // Update the guest user's email to the real email
     await prisma.user.update({
       where: { id: assessment.user.id },

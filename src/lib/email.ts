@@ -12,6 +12,15 @@ interface SelfRatingData {
   rating: number;
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function getRatingLabel(rating: number): string {
   if (rating >= 9) return "Exceptional";
   if (rating >= 7) return "Strong";
@@ -46,7 +55,7 @@ function buildResultsHtml(
             Q${qi + 1}. ${c.questions[qi]}
           </p>
           <p style="margin:0;padding:10px 12px;background:#f8f9fa;border-radius:6px;color:#555;font-size:14px;line-height:1.5;">
-            ${answer.replace(/\n/g, "<br/>")}
+            ${escapeHtml(answer).replace(/\n/g, "<br/>")}
           </p>
         </div>`;
     }
