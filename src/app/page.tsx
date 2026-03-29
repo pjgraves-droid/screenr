@@ -82,8 +82,9 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-foreground mb-8 text-center">
               Scoring Guide
             </h2>
-            <div className="overflow-hidden rounded-xl border border-card-border">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-xl border border-card-border">
+              {/* Desktop table */}
+              <table className="w-full text-sm hidden sm:table">
                 <thead>
                   <tr className="bg-[#161923]">
                     <th className="text-left px-4 py-3 font-semibold text-muted">Score</th>
@@ -107,6 +108,24 @@ export default function Home() {
                   ))}
                 </tbody>
               </table>
+              {/* Mobile stacked cards */}
+              <div className="sm:hidden divide-y divide-card-border">
+                {[
+                  { range: "9-10", level: "Exceptional", desc: "Best-in-class evidence. Would be a standout even at Cognition's bar.", color: "text-brand-green" },
+                  { range: "7-8", level: "Strong", desc: "Clear, proven evidence with specific examples. Meets the Cognition standard.", color: "text-brand-blue" },
+                  { range: "5-6", level: "Developing", desc: "Some evidence but gaps in depth, recency, or relevance.", color: "text-amber-400" },
+                  { range: "3-4", level: "Emerging", desc: "Limited evidence. Requires significant development.", color: "text-orange-400" },
+                  { range: "1-2", level: "Gap", desc: "No meaningful evidence. Potential risk area.", color: "text-red-400" },
+                ].map((s) => (
+                  <div key={s.range} className="px-4 py-3">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="font-mono font-bold text-foreground">{s.range}</span>
+                      <span className={`font-semibold ${s.color}`}>{s.level}</span>
+                    </div>
+                    <p className="text-xs text-muted">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
