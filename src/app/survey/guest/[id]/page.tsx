@@ -212,9 +212,14 @@ export default function GuestSurveyPage({
               Thank you for completing the Executive Competency Assessment.
             </p>
             {submitResult.emailSent && email ? (
-              <p className="text-brand-green text-sm mb-8">
-                Your results have been sent to <strong>{email}</strong>.
-              </p>
+              <>
+                <p className="text-brand-green text-sm mb-2">
+                  Your results have been sent to <strong>{email}</strong>.
+                </p>
+                <p className="text-muted text-xs mb-8">
+                  Don&apos;t see it? Please check your spam or junk folder.
+                </p>
+              </>
             ) : email ? (
               <p className="text-amber-400 text-sm mb-8">
                 Your responses have been recorded. Email delivery is not
