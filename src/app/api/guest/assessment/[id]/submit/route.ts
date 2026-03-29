@@ -40,29 +40,17 @@ export async function POST(
       );
     }
 
-    // Check if email is already in use by another user
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser && existingUser.id !== assessment.user.id) {
-      return NextResponse.json(
-        { error: "This email is already in use. Please use a different email address." },
-        { status: 409 }
-      );
-    }
-
-    // Update user email and mark assessment as submitted atomically
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: assessment.user.id },
-        data: { email, name: email.split("@")[0] },
-      }),
-      prisma.assessment.update({
-        where: { id },
-        data: {
-          status: "SUBMITTED",
-          submittedAt: new Date(),
-        },
-      }),
-    ]);
+    // Store contact email on assessment and mark as submitted
+    // Note: We do NOT update User.email to prevent email squatting attacks
+    // where an attacker claims a legitimate user's email via the guest flow.
+    await prisma.assessment.update({
+      where: { id },
+      data: {
+        status: "SUBMITTED",
+        contactEmail: email,
+        submittedAt: new Date(),
+      },
+    });
 
     // Send results email
     const emailResult = await sendResultsEmail(
