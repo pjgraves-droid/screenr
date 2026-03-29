@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendResultsEmail } from "@/lib/email";
@@ -71,9 +71,13 @@ export async function POST(request: Request) {
     }
   }
 
-  // Run AI scoring in the background (non-blocking — submission succeeds even if AI fails)
-  scoreAndSave(assessmentId, assessment.responses, assessment.selfRatings).catch((aiErr) => {
-    console.error("AI scoring failed:", aiErr);
+  // Run AI scoring after the response is sent (keeps Vercel function alive)
+  after(async () => {
+    try {
+      await scoreAndSave(assessmentId, assessment.responses, assessment.selfRatings);
+    } catch (aiErr) {
+      console.error("AI scoring failed:", aiErr);
+    }
   });
 
   return NextResponse.json({
