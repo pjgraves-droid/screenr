@@ -9,23 +9,35 @@ export async function GET() {
     AUTH_SECRET_set: !!process.env.AUTH_SECRET,
   };
 
-  try {
-    const users = await prisma.user.count();
-    results.db_connected = true;
-    results.user_count = users;
-  } catch (error) {
-    results.db_connected = false;
-    results.db_error = error instanceof Error ? error.message : String(error);
-    results.db_error_stack = error instanceof Error ? error.stack?.split("\n").slice(0, 5) : undefined;
+  // Check each table individually
+  const tables = ["user", "assessment", "response", "selfRating", "adminRating"] as const;
+  for (const table of tables) {
+    try {
+      const count = await (prisma[table] as { count: () => Promise<number> }).count();
+      results[`${table}_table_ok`] = true;
+      results[`${table}_count`] = count;
+    } catch (error) {
+      results[`${table}_table_ok`] = false;
+      results[`${table}_error`] = error instanceof Error ? error.message : String(error);
+    }
   }
 
+  // Try full assessment creation flow
   try {
-    const assessments = await prisma.assessment.count();
-    results.assessment_table_ok = true;
-    results.assessment_count = assessments;
+    const firstUser = await prisma.user.findFirst();
+    if (firstUser) {
+      const testAssessment = await prisma.assessment.create({
+        data: { userId: firstUser.id },
+        include: { responses: true, selfRatings: true },
+      });
+      await prisma.assessment.delete({ where: { id: testAssessment.id } });
+      results.full_create_test = "ok";
+    } else {
+      results.full_create_test = "no users";
+    }
   } catch (error) {
-    results.assessment_table_ok = false;
-    results.assessment_error = error instanceof Error ? error.message : String(error);
+    results.full_create_test = "failed";
+    results.full_create_error = error instanceof Error ? error.message : String(error);
   }
 
   return NextResponse.json(results);
