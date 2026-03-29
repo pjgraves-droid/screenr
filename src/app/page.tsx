@@ -10,21 +10,21 @@ export default function Home() {
       <main className="flex-1">
         {/* Hero */}
         <section className="bg-gradient-to-br from-[#0f1118] via-[#141829] to-[#1a1f3a] text-white">
-          <div className="max-w-5xl mx-auto px-4 py-20 sm:py-28 text-center">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6">
+          <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
               Executive Competency Assessment
             </h1>
-            <p className="text-lg sm:text-xl text-muted max-w-3xl mx-auto mb-10">
+            <p className="text-base sm:text-lg text-muted max-w-3xl mx-auto mb-6">
               Based on the Cognition Executive Competency Framework. Evaluate
               yourself across 10 critical competencies informed by Founders
               Fund&apos;s investment thesis and Silicon Valley best practices.
             </p>
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-3">
               <GuestStartButton />
-              <p className="text-sm text-muted">
+              <p className="text-xs text-muted">
                 No account needed &mdash; get your results emailed to you
               </p>
-              <div className="flex gap-4 mt-2">
+              <div className="flex gap-4 mt-1">
                 <Link
                   href="/register"
                   className="rounded-lg border-2 border-white/20 text-white px-6 py-2 text-sm font-semibold hover:bg-white/10 transition-colors"
