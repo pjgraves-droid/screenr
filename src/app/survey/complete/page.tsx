@@ -4,13 +4,19 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { competencies } from "@/lib/competencies";
 
 interface SubmitResult {
   avgRating: number;
   ratingsCount: number;
   emailSent: boolean;
+}
+
+interface AiScore {
+  competencyRank: number;
+  score: number;
+  rationale: string;
 }
 
 function getRatingLabel(rating: number): string {
@@ -27,6 +33,9 @@ export default function CompletePage() {
   const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
   const [reopening, setReopening] = useState(false);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
+  const [aiScores, setAiScores] = useState<AiScore[]>([]);
+  const [aiLoading, setAiLoading] = useState(true);
+  const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -44,6 +53,47 @@ export default function CompletePage() {
         .catch(() => {});
     }
   }, [status]);
+
+  const fetchAiScores = useCallback(async () => {
+    try {
+      const res = await fetch("/api/assessment/ai-scores");
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data.scores && data.scores.length > 0) {
+        setAiScores(data.scores);
+        setAiLoading(false);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let cancelled = false;
+
+    // Initial fetch
+    fetchAiScores().then((done) => {
+      if (done || cancelled) return;
+      // Poll every 5 seconds for up to 2 minutes
+      let attempts = 0;
+      pollRef.current = setInterval(async () => {
+        attempts++;
+        const done = await fetchAiScores();
+        if (done || attempts >= 24 || cancelled) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          if (!cancelled) setAiLoading(false);
+        }
+      }, 5000);
+    });
+
+    return () => {
+      cancelled = true;
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [status, fetchAiScores]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("submitResult");
@@ -122,6 +172,53 @@ export default function CompletePage() {
             </div>
           )}
 
+          {/* AI Rating */}
+          {aiLoading ? (
+            <div className="bg-card rounded-xl border border-card-border p-6 mb-6">
+              <div className="text-sm text-muted mb-2">AI Rating</div>
+              <div className="flex items-center justify-center gap-2 text-muted">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span className="text-sm">Analyzing your responses...</span>
+              </div>
+            </div>
+          ) : aiScores.length > 0 ? (
+            <div className="bg-card rounded-xl border border-card-border p-6 mb-6 text-left">
+              <div className="text-sm text-muted mb-1 text-center">Average AI Rating</div>
+              <div className="text-4xl font-bold text-brand-blue mb-1 text-center">
+                {(aiScores.reduce((sum, s) => sum + s.score, 0) / aiScores.length).toFixed(1)}
+              </div>
+              <div className="text-sm text-muted mb-4 text-center">
+                {getRatingLabel(aiScores.reduce((sum, s) => sum + s.score, 0) / aiScores.length)}
+              </div>
+              <div className="space-y-3">
+                {competencies.map((c) => {
+                  const aiScore = aiScores.find((s) => s.competencyRank === c.rank);
+                  if (!aiScore) return null;
+                  return (
+                    <div key={c.rank} className="border-t border-card-border pt-3 first:border-t-0 first:pt-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-foreground">{c.name}</span>
+                        <span className={`text-sm font-bold ${
+                          aiScore.score >= 9 ? "text-brand-green" :
+                          aiScore.score >= 7 ? "text-brand-blue" :
+                          aiScore.score >= 5 ? "text-yellow-400" :
+                          aiScore.score >= 3 ? "text-orange-400" :
+                          "text-red-400"
+                        }`}>
+                          {aiScore.score}/10 &middot; {getRatingLabel(aiScore.score)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted">{aiScore.rationale}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           {/* Email Status */}
           {submitResult?.emailSent && session?.user?.email ? (
             <>
@@ -150,7 +247,7 @@ export default function CompletePage() {
             </a>
             <button
               onClick={handleEditResubmit}
-              disabled={reopening}
+              disabled={reopening || !assessmentId}
               className="rounded-lg border border-brand-purple px-6 py-3 text-sm font-semibold text-brand-purple hover:bg-brand-purple/10 disabled:opacity-50 transition-colors"
             >
               {reopening ? "Reopening..." : "Edit & Resubmit"}
