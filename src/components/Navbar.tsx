@@ -16,9 +16,9 @@ export default function Navbar() {
               <Image
                 src="/acumen_logo.png"
                 alt="Acumen"
-                width={360}
-                height={120}
-                className="h-48 w-auto"
+                width={270}
+                height={90}
+                className="h-36 w-auto"
                 priority
               />
             </Link>
