@@ -115,56 +115,62 @@ export async function scoreAssessment(
   const expectedCount = competencies.length;
 
   // Try up to 3 times to get all competency scores
+  let lastResult: AiScoreResult[] = [];
+
   for (let attempt = 0; attempt < 3; attempt++) {
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 8192,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-    });
+    try {
+      const message = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 8192,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      });
 
-    const textBlock = message.content.find((block) => block.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      throw new Error("No text response from AI model");
-    }
+      const textBlock = message.content.find((block) => block.type === "text");
+      if (!textBlock || textBlock.type !== "text") {
+        throw new Error("No text response from AI model");
+      }
 
-    const validated = parseAndValidateScores(textBlock.text.trim());
+      const validated = parseAndValidateScores(textBlock.text.trim());
 
-    // Deduplicate: keep only the first entry per competencyRank
-    const seen = new Set<number>();
-    const deduped = validated.filter((s) => {
-      if (seen.has(s.competencyRank)) return false;
-      seen.add(s.competencyRank);
-      return true;
-    });
+      // Deduplicate: keep only the first entry per competencyRank
+      const seen = new Set<number>();
+      const deduped = validated.filter((s) => {
+        if (seen.has(s.competencyRank)) return false;
+        seen.add(s.competencyRank);
+        return true;
+      });
 
-    // Check if we got all unique competencies
-    if (deduped.length >= expectedCount) {
-      return deduped;
-    }
+      lastResult = deduped;
 
-    // If we got some but not all, check which are missing
-    const gotRanks = new Set(deduped.map((s) => s.competencyRank));
-    const missingRanks = competencies
-      .map((c) => c.rank)
-      .filter((r) => !gotRanks.has(r));
+      // Check if we got all unique competencies
+      if (deduped.length >= expectedCount) {
+        return deduped;
+      }
 
-    console.log(
-      `AI scoring attempt ${attempt + 1}: got ${deduped.length}/${expectedCount} unique scores. Missing ranks: ${missingRanks.join(", ")}`
-    );
+      // If we got some but not all, check which are missing
+      const gotRanks = new Set(deduped.map((s) => s.competencyRank));
+      const missingRanks = competencies
+        .map((c) => c.rank)
+        .filter((r) => !gotRanks.has(r));
 
-    // On last attempt, return whatever we have
-    if (attempt === 2) {
-      return deduped;
+      console.log(
+        `AI scoring attempt ${attempt + 1}: got ${deduped.length}/${expectedCount} unique scores. Missing ranks: ${missingRanks.join(", ")}`
+      );
+    } catch (error) {
+      console.error(`AI scoring attempt ${attempt + 1} failed:`, error);
+      // On last attempt, re-throw if we have no results at all
+      if (attempt === 2 && lastResult.length === 0) {
+        throw error;
+      }
     }
   }
 
-  // Should not reach here, but just in case
-  return [];
+  return lastResult;
 }
 
 export async function scoreAndSave(
