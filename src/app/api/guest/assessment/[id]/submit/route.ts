@@ -53,13 +53,18 @@ export async function POST(
       },
     });
 
-    // Generate PDF
-    const pdfBuffer = generateResultsPdf(
-      assessment.responses,
-      assessment.selfRatings
-    );
+    // Generate PDF (non-blocking — submission succeeds even if PDF fails)
+    let pdfBuffer: Buffer | undefined;
+    try {
+      pdfBuffer = generateResultsPdf(
+        assessment.responses,
+        assessment.selfRatings
+      );
+    } catch (pdfErr) {
+      console.error("PDF generation failed, sending email without attachment:", pdfErr);
+    }
 
-    // Send results email with PDF attachment
+    // Send results email with PDF attachment (if available)
     const emailResult = await sendResultsEmail(
       email,
       assessment.responses,

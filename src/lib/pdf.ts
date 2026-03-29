@@ -22,7 +22,6 @@ function getRatingLabel(rating: number): string {
 
 // Brand colors
 const PURPLE = [57, 105, 202] as const;
-const GREEN = [33, 193, 154] as const;
 const DARK_BG = [18, 27, 44] as const;
 
 export function generateResultsPdf(
