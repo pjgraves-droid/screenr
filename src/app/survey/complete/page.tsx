@@ -150,7 +150,7 @@ export default function CompletePage() {
             </a>
             <button
               onClick={handleEditResubmit}
-              disabled={reopening}
+              disabled={reopening || !assessmentId}
               className="rounded-lg border border-brand-purple px-6 py-3 text-sm font-semibold text-brand-purple hover:bg-brand-purple/10 disabled:opacity-50 transition-colors"
             >
               {reopening ? "Reopening..." : "Edit & Resubmit"}
