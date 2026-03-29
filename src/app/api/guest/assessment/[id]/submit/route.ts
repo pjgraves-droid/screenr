@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendResultsEmail } from "@/lib/email";
+import { generateResultsPdf } from "@/lib/pdf";
 
 export async function POST(
   request: Request,
@@ -52,11 +53,23 @@ export async function POST(
       },
     });
 
-    // Send results email
+    // Generate PDF (non-blocking — submission succeeds even if PDF fails)
+    let pdfBuffer: Buffer | undefined;
+    try {
+      pdfBuffer = generateResultsPdf(
+        assessment.responses,
+        assessment.selfRatings
+      );
+    } catch (pdfErr) {
+      console.error("PDF generation failed, sending email without attachment:", pdfErr);
+    }
+
+    // Send results email with PDF attachment (if available)
     const emailResult = await sendResultsEmail(
       email,
       assessment.responses,
-      assessment.selfRatings
+      assessment.selfRatings,
+      pdfBuffer
     );
 
     return NextResponse.json({

@@ -231,12 +231,21 @@ export default function GuestSurveyPage({
                 Your responses have been recorded.
               </p>
             )}
-            <button
-              onClick={() => router.push("/")}
-              className="rounded-lg bg-brand-purple px-6 py-3 text-sm font-semibold text-white hover:bg-[#2d56a8] transition-colors"
-            >
-              Return Home
-            </button>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <a
+                href={`/api/guest/assessment/${assessmentId}/pdf`}
+                download
+                className="rounded-lg bg-brand-green px-6 py-3 text-sm font-semibold text-white hover:bg-[#1aa584] transition-colors"
+              >
+                Download PDF
+              </a>
+              <button
+                onClick={() => router.push("/")}
+                className="rounded-lg bg-brand-purple px-6 py-3 text-sm font-semibold text-white hover:bg-[#2d56a8] transition-colors"
+              >
+                Return Home
+              </button>
+            </div>
           </div>
         </main>
       </>
