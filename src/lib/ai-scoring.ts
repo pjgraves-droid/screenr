@@ -59,20 +59,45 @@ Here are the candidate's responses:\n\n`;
     }
   }
 
-  prompt += `---\n\nRespond with ONLY a valid JSON array of objects, one per competency. Each object must have exactly these fields:
+  prompt += `---\n\nYou MUST respond with a valid JSON array containing EXACTLY 10 objects — one for each competency (ranks 1 through 10). Do not skip any competency. Each object must have exactly these fields:
 - "competencyRank": number (1-10)
 - "score": number (1-10)  
-- "rationale": string (2-3 sentences explaining the score, referencing specific evidence or lack thereof)
+- "rationale": string (1-2 sentences, be concise)
 
 Example format:
 [
-  {"competencyRank": 1, "score": 7, "rationale": "Candidate provided a strong example of building from scratch at Company X, growing from 0 to $5M ARR. However, the 30-day plan lacked specificity."},
-  ...
+  {"competencyRank": 1, "score": 7, "rationale": "Strong example of building from scratch. However, the 30-day plan lacked specificity."},
+  {"competencyRank": 2, "score": 5, "rationale": "Some evidence of work ethic but lacked concrete metrics."},
+  ... (continue for ALL 10 competencies)
 ]
 
-Return ONLY the JSON array, no other text.`;
+IMPORTANT: You must include ALL 10 competencies (ranks 1-10). Return ONLY the JSON array, no other text.`;
 
   return prompt;
+}
+
+function parseAndValidateScores(rawText: string): AiScoreResult[] {
+  const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+  if (!jsonMatch) {
+    throw new Error("Could not parse AI response as JSON array");
+  }
+
+  const scores: AiScoreResult[] = JSON.parse(jsonMatch[0]);
+
+  return scores
+    .filter(
+      (s) =>
+        typeof s.competencyRank === "number" &&
+        typeof s.score === "number" &&
+        typeof s.rationale === "string" &&
+        s.competencyRank >= 1 &&
+        s.competencyRank <= 10
+    )
+    .map((s) => ({
+      competencyRank: s.competencyRank,
+      score: Math.min(10, Math.max(1, Math.round(s.score))),
+      rationale: s.rationale.slice(0, 500),
+    }));
 }
 
 export async function scoreAssessment(
@@ -87,49 +112,65 @@ export async function scoreAssessment(
 
   const client = new Anthropic({ apiKey });
   const prompt = buildPrompt(responses, selfRatings);
+  const expectedCount = competencies.length;
 
-  const message = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 4096,
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-  });
+  // Try up to 3 times to get all competency scores
+  let lastResult: AiScoreResult[] = [];
 
-  const textBlock = message.content.find((block) => block.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("No text response from AI model");
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const message = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 8192,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      });
+
+      const textBlock = message.content.find((block) => block.type === "text");
+      if (!textBlock || textBlock.type !== "text") {
+        throw new Error("No text response from AI model");
+      }
+
+      const validated = parseAndValidateScores(textBlock.text.trim());
+
+      // Deduplicate: keep only the first entry per competencyRank
+      const seen = new Set<number>();
+      const deduped = validated.filter((s) => {
+        if (seen.has(s.competencyRank)) return false;
+        seen.add(s.competencyRank);
+        return true;
+      });
+
+      lastResult = deduped;
+
+      // Check if we got all unique competencies
+      if (deduped.length >= expectedCount) {
+        return deduped;
+      }
+
+      // If we got some but not all, check which are missing
+      const gotRanks = new Set(deduped.map((s) => s.competencyRank));
+      const missingRanks = competencies
+        .map((c) => c.rank)
+        .filter((r) => !gotRanks.has(r));
+
+      console.log(
+        `AI scoring attempt ${attempt + 1}: got ${deduped.length}/${expectedCount} unique scores. Missing ranks: ${missingRanks.join(", ")}`
+      );
+    } catch (error) {
+      console.error(`AI scoring attempt ${attempt + 1} failed:`, error);
+      // On last attempt, re-throw if we have no results at all
+      if (attempt === 2 && lastResult.length === 0) {
+        throw error;
+      }
+    }
   }
 
-  const rawText = textBlock.text.trim();
-  // Extract JSON array from response (handle markdown code blocks)
-  const jsonMatch = rawText.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) {
-    throw new Error("Could not parse AI response as JSON array");
-  }
-
-  const scores: AiScoreResult[] = JSON.parse(jsonMatch[0]);
-
-  // Validate and clamp scores
-  const validated = scores
-    .filter(
-      (s) =>
-        typeof s.competencyRank === "number" &&
-        typeof s.score === "number" &&
-        typeof s.rationale === "string" &&
-        s.competencyRank >= 1 &&
-        s.competencyRank <= 10
-    )
-    .map((s) => ({
-      competencyRank: s.competencyRank,
-      score: Math.min(10, Math.max(1, Math.round(s.score))),
-      rationale: s.rationale.slice(0, 1000),
-    }));
-
-  return validated;
+  return lastResult;
 }
 
 export async function scoreAndSave(
