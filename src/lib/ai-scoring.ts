@@ -163,6 +163,10 @@ export async function scoreAssessment(
     console.error("AI scoring batch 2 failed:", results2.reason);
   }
 
+  if (allScores.length === 0) {
+    throw new Error("AI scoring failed: both batches returned no results");
+  }
+
   console.log(
     `AI scoring complete: ${allScores.length}/${competencies.length} competencies scored`
   );
