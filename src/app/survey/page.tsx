@@ -34,6 +34,7 @@ export default function SurveyPage() {
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -44,8 +45,12 @@ export default function SurveyPage() {
   useEffect(() => {
     if (status === "authenticated") {
       fetch("/api/assessment")
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) throw new Error(`API error: ${res.status}`);
+          return res.json();
+        })
         .then((data: AssessmentData) => {
+          if (!data.id) throw new Error("Invalid assessment data");
           setAssessment(data);
           if (data.status === "SUBMITTED") {
             router.push("/survey/complete");
@@ -61,6 +66,10 @@ export default function SurveyPage() {
             ratingMap[r.competencyRank] = r.rating;
           });
           setRatings(ratingMap);
+        })
+        .catch((err) => {
+          console.error("Failed to load assessment:", err);
+          setLoadError("Failed to load assessment. Please refresh the page.");
         });
     }
   }, [status, router]);
@@ -153,6 +162,25 @@ export default function SurveyPage() {
   }, 0);
   const totalQuestions = competencies.reduce((acc, c) => acc + c.questions.length, 0);
   const progressPercent = Math.round((totalAnswered / totalQuestions) * 100);
+
+  if (loadError) {
+    return (
+      <>
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-red-600 mb-4">{loadError}</div>
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   if (status === "loading" || !assessment) {
     return (
