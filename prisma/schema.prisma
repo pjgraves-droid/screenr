@@ -31,6 +31,7 @@ model Assessment {
   responses    Response[]
   selfRatings  SelfRating[]
   adminRatings AdminRating[]
+  aiScores     AiScore[]
 }
 
 model Response {
@@ -65,4 +66,16 @@ model AdminRating {
   admin          User       @relation(fields: [adminUserId], references: [id])
 
   @@unique([assessmentId, competencyRank, adminUserId])
+}
+
+model AiScore {
+  id             String     @id @default(cuid())
+  assessmentId   String
+  competencyRank Int
+  score          Int
+  rationale      String
+  createdAt      DateTime   @default(now())
+  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, competencyRank])
 }

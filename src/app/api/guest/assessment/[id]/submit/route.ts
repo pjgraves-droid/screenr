@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendResultsEmail } from "@/lib/email";
 import { generateResultsPdf } from "@/lib/pdf";
+import { scoreAndSave } from "@/lib/ai-scoring";
 
 export async function POST(
   request: Request,
@@ -71,6 +72,13 @@ export async function POST(
       assessment.selfRatings,
       pdfBuffer
     );
+
+    // Run AI scoring (non-blocking — submission succeeds even if AI fails)
+    try {
+      await scoreAndSave(id, assessment.responses, assessment.selfRatings);
+    } catch (aiErr) {
+      console.error("AI scoring failed:", aiErr);
+    }
 
     return NextResponse.json({
       success: true,

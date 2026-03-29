@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendResultsEmail } from "@/lib/email";
 import { generateResultsPdf } from "@/lib/pdf";
+import { scoreAndSave } from "@/lib/ai-scoring";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -68,6 +69,13 @@ export async function POST(request: Request) {
     } catch (emailErr) {
       console.error("Email send failed:", emailErr);
     }
+  }
+
+  // Run AI scoring in the background (non-blocking — submission succeeds even if AI fails)
+  try {
+    await scoreAndSave(assessmentId, assessment.responses, assessment.selfRatings);
+  } catch (aiErr) {
+    console.error("AI scoring failed:", aiErr);
   }
 
   return NextResponse.json({

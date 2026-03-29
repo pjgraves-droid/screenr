@@ -22,6 +22,7 @@ export async function GET(
       responses: true,
       selfRatings: true,
       adminRatings: true,
+      aiScores: true,
     },
   });
 

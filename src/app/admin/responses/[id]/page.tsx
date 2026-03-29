@@ -25,6 +25,12 @@ interface AdminRatingItem {
   adminUserId: string;
 }
 
+interface AiScoreItem {
+  competencyRank: number;
+  score: number;
+  rationale: string;
+}
+
 interface AssessmentUser {
   id: string;
   name: string | null;
@@ -41,6 +47,7 @@ interface AssessmentDetail {
   responses: ResponseItem[];
   selfRatings: SelfRatingItem[];
   adminRatings: AdminRatingItem[];
+  aiScores: AiScoreItem[];
 }
 
 export default function AssessmentDetailPage({
@@ -118,6 +125,11 @@ export default function AssessmentDetailPage({
     if (!assessment) return null;
     const r = assessment.selfRatings.find((r) => r.competencyRank === rank);
     return r?.rating || null;
+  };
+
+  const getAiScore = (rank: number) => {
+    if (!assessment) return null;
+    return assessment.aiScores.find((s) => s.competencyRank === rank) || null;
   };
 
   const getRatingLabel = (rating: number) => {
@@ -217,6 +229,17 @@ export default function AssessmentDetailPage({
                           S: {selfR}
                         </span>
                       )}
+                      {(() => {
+                        const ai = getAiScore(c.rank);
+                        return ai ? (
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-xs font-bold border ${getRatingColor(ai.score)}`}
+                            title={`AI: ${ai.rationale}`}
+                          >
+                            AI: {ai.score}
+                          </span>
+                        ) : null;
+                      })()}
                       {adminR && (
                         <span
                           className={`inline-block px-2 py-0.5 rounded text-xs font-bold border ${getRatingColor(adminR)}`}
@@ -225,7 +248,7 @@ export default function AssessmentDetailPage({
                           A: {adminR}
                         </span>
                       )}
-                      {!selfR && !adminR && (
+                      {!selfR && !adminR && !getAiScore(c.rank) && (
                         <span className="text-xs text-muted">-</span>
                       )}
                     </div>
@@ -279,18 +302,33 @@ export default function AssessmentDetailPage({
                           </span>
                         </div>
                       </div>
-                      {selfRating && (
-                        <div className="text-right">
-                          <div className="text-xs text-muted">
-                            Self-Rating
+                      <div className="text-right flex items-start gap-4">
+                        {(() => {
+                          const ai = getAiScore(c.rank);
+                          return ai ? (
+                            <div>
+                              <div className="text-xs text-muted">AI Score</div>
+                              <span
+                                className={`inline-block mt-1 px-3 py-1 rounded-lg text-sm font-bold border ${getRatingColor(ai.score)}`}
+                              >
+                                {ai.score}/10 - {getRatingLabel(ai.score)}
+                              </span>
+                            </div>
+                          ) : null;
+                        })()}
+                        {selfRating && (
+                          <div>
+                            <div className="text-xs text-muted">
+                              Self-Rating
+                            </div>
+                            <span
+                              className={`inline-block mt-1 px-3 py-1 rounded-lg text-sm font-bold border ${getRatingColor(selfRating)}`}
+                            >
+                              {selfRating}/10 - {getRatingLabel(selfRating)}
+                            </span>
                           </div>
-                          <span
-                            className={`inline-block mt-1 px-3 py-1 rounded-lg text-sm font-bold border ${getRatingColor(selfRating)}`}
-                          >
-                            {selfRating}/10 - {getRatingLabel(selfRating)}
-                          </span>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -317,6 +355,21 @@ export default function AssessmentDetailPage({
                       );
                     })}
                   </div>
+
+                  {/* AI Rationale */}
+                  {(() => {
+                    const ai = getAiScore(c.rank);
+                    return ai ? (
+                      <div className="px-6 py-4 bg-brand-blue/5 border-t border-card-border">
+                        <h4 className="text-sm font-semibold text-brand-blue mb-1">
+                          AI Analysis
+                        </h4>
+                        <p className="text-sm text-foreground/80">
+                          {ai.rationale}
+                        </p>
+                      </div>
+                    ) : null;
+                  })()}
 
                   {/* Admin Rating */}
                   <div className="p-6 bg-brand-purple/5 border-t border-card-border">
