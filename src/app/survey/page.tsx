@@ -209,7 +209,7 @@ export default function SurveyPage() {
               </h1>
               <div className="flex items-center gap-3">
                 {saving && (
-                  <span className="text-xs text-brand-green">Saving...</span>
+                  <span className="text-xs text-amber-400">Saving...</span>
                 )}
                 {lastSaved && !saving && (
                   <span className="text-xs text-muted">
