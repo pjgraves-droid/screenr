@@ -12,7 +12,7 @@ export async function GET() {
     where: { status: "SUBMITTED" },
     include: {
       user: {
-        select: { id: true, name: true, email: true, createdAt: true },
+        select: { id: true, name: true, email: true, role: true, createdAt: true },
       },
       responses: true,
       selfRatings: true,

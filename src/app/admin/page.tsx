@@ -11,6 +11,7 @@ interface AssessmentUser {
   id: string;
   name: string | null;
   email: string;
+  role: string;
   createdAt: string;
 }
 
@@ -161,8 +162,15 @@ export default function AdminPage() {
                     return (
                       <tr key={a.id} className="hover:bg-card-border/30">
                         <td className="px-4 py-3">
-                          <div className="font-medium text-foreground">
-                            {a.user.name || "Unnamed"}
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">
+                              {a.user.name || "Unnamed"}
+                            </span>
+                            {a.user.role === "GUEST" && (
+                              <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-amber-900/20 text-amber-400 border border-amber-800/30">
+                                Guest
+                              </span>
+                            )}
                           </div>
                           <div className="text-xs text-muted">
                             {a.user.email}
