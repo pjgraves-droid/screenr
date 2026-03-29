@@ -18,7 +18,7 @@ export default function Navbar() {
                 alt="Acumen"
                 width={360}
                 height={120}
-                className="h-16 w-auto"
+                className="h-48 w-auto"
                 priority
               />
             </Link>
