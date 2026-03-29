@@ -65,11 +65,11 @@ export default function AdminPage() {
   };
 
   const getRatingColor = (avg: number) => {
-    if (avg >= 9) return "text-emerald-700 bg-emerald-50";
-    if (avg >= 7) return "text-blue-700 bg-blue-50";
-    if (avg >= 5) return "text-amber-700 bg-amber-50";
-    if (avg >= 3) return "text-orange-700 bg-orange-50";
-    return "text-red-700 bg-red-50";
+    if (avg >= 9) return "text-brand-green bg-brand-green/10";
+    if (avg >= 7) return "text-brand-blue bg-brand-blue/10";
+    if (avg >= 5) return "text-amber-400 bg-amber-900/20";
+    if (avg >= 3) return "text-orange-400 bg-orange-900/20";
+    return "text-red-400 bg-red-900/20";
   };
 
   if (status === "loading" || loading) {
