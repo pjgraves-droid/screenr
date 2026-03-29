@@ -12,7 +12,7 @@ export async function GET() {
     where: { status: "SUBMITTED" },
     include: {
       user: {
-        select: { id: true, name: true, email: true, createdAt: true },
+        select: { id: true, name: true, email: true, role: true, createdAt: true },
       },
       responses: true,
       selfRatings: true,
@@ -21,5 +21,15 @@ export async function GET() {
     orderBy: { submittedAt: "desc" },
   });
 
-  return NextResponse.json(assessments);
+  // For guest assessments, use contactEmail instead of the temporary user email
+  const enriched = assessments.map((a) => ({
+    ...a,
+    user: {
+      ...a.user,
+      email: a.contactEmail && a.user.role === "GUEST" ? a.contactEmail : a.user.email,
+      name: a.contactEmail && a.user.role === "GUEST" ? a.contactEmail.split("@")[0] : a.user.name,
+    },
+  }));
+
+  return NextResponse.json(enriched);
 }

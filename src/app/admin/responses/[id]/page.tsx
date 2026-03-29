@@ -29,6 +29,7 @@ interface AssessmentUser {
   id: string;
   name: string | null;
   email: string;
+  role: string;
   createdAt: string;
 }
 
@@ -172,8 +173,13 @@ export default function AssessmentDetailPage({
             </Link>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">
+                <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                   {assessment.user.name || "Unnamed Candidate"}
+                  {assessment.user.role === "GUEST" && (
+                    <span className="text-xs font-medium px-2 py-0.5 rounded bg-amber-900/20 text-amber-400 border border-amber-800/30">
+                      Guest
+                    </span>
+                  )}
                 </h1>
                 <p className="text-muted">
                   {assessment.user.email} &middot; Submitted{" "}

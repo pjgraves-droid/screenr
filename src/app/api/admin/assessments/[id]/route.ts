@@ -17,7 +17,7 @@ export async function GET(
     where: { id },
     include: {
       user: {
-        select: { id: true, name: true, email: true, createdAt: true },
+        select: { id: true, name: true, email: true, role: true, createdAt: true },
       },
       responses: true,
       selfRatings: true,
@@ -29,5 +29,17 @@ export async function GET(
     return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
   }
 
-  return NextResponse.json(assessment);
+  // For guest assessments, use contactEmail instead of the temporary user email
+  const result = assessment.contactEmail && assessment.user.role === "GUEST"
+    ? {
+        ...assessment,
+        user: {
+          ...assessment.user,
+          email: assessment.contactEmail,
+          name: assessment.contactEmail.split("@")[0],
+        },
+      }
+    : assessment;
+
+  return NextResponse.json(result);
 }

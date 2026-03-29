@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import GuestStartButton from "@/components/GuestStartButton";
 import { competencies, categoryLabels, categoryColors } from "@/lib/competencies";
 
 export default function Home() {
@@ -18,19 +19,25 @@ export default function Home() {
               yourself across 10 critical competencies informed by Founders
               Fund&apos;s investment thesis and Silicon Valley best practices.
             </p>
-            <div className="flex gap-4 justify-center">
-              <Link
-                href="/register"
-                className="rounded-lg bg-brand-purple text-white px-8 py-3 text-lg font-semibold hover:bg-[#2d56a8] transition-colors shadow-lg"
-              >
-                Start Assessment
-              </Link>
-              <Link
-                href="/login"
-                className="rounded-lg border-2 border-white/20 text-white px-8 py-3 text-lg font-semibold hover:bg-white/10 transition-colors"
-              >
-                Sign In
-              </Link>
+            <div className="flex flex-col items-center gap-4">
+              <GuestStartButton />
+              <p className="text-sm text-muted">
+                No account needed &mdash; get your results emailed to you
+              </p>
+              <div className="flex gap-4 mt-2">
+                <Link
+                  href="/register"
+                  className="rounded-lg border-2 border-white/20 text-white px-6 py-2 text-sm font-semibold hover:bg-white/10 transition-colors"
+                >
+                  Create Account
+                </Link>
+                <Link
+                  href="/login"
+                  className="rounded-lg border-2 border-white/20 text-white px-6 py-2 text-sm font-semibold hover:bg-white/10 transition-colors"
+                >
+                  Sign In
+                </Link>
+              </div>
             </div>
           </div>
         </section>
