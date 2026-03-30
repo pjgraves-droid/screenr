@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="120" viewBox="0 0 460 120">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&amp;family=Space+Grotesk:wght@600&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- Viewfinder mark — apex y=20, base y=100 -->
+  <g transform="translate(20, 20)">
+    <path d="M12 0 L0 0 L0 12"     fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M60 0 L72 0 L72 12"   fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M0 68 L0 80 L12 80"   fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M72 68 L72 80 L60 80" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M18 68 L36 12 L54 68" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="26" y1="47" x2="46" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="36" cy="12" r="4.5" fill="white"/>
+  </g>
+
+  <!-- Divider -->
+  <line x1="114" y1="20" x2="114" y2="100" stroke="white" stroke-width="0.6" opacity="0.25"/>
+
+  <!-- ACUMEN -->
+  <text
+    x="130" y="20"
+    dominant-baseline="text-before-edge"
+    font-size="32"
+    font-weight="600"
+    font-family="'Space Grotesk', 'Helvetica Neue', Arial, sans-serif"
+    fill="white"
+    textLength="270"
+    lengthAdjust="spacingAndGlyphs"
+  >ACUMEN</text>
+
+  <!-- TALENT INTELLIGENCE -->
+  <text
+    x="130" y="100"
+    dominant-baseline="text-after-edge"
+    font-size="17"
+    font-weight="500"
+    font-family="'DM Mono', 'Courier New', monospace"
+    fill="white"
+    opacity="0.65"
+    textLength="270"
+    lengthAdjust="spacing"
+  >TALENT INTELLIGENCE</text>
+</svg>
