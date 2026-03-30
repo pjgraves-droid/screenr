@@ -16,7 +16,7 @@ export default function Navbar() {
           <div className="flex items-center gap-4 sm:gap-6">
             <Link href="/" className="flex items-center">
               <Image
-                src="/acumen-logo.svg"
+                src="/acumen-logo-final.svg"
                 alt="Acumen"
                 width={270}
                 height={90}
